@@ -11,7 +11,7 @@ const ownerOnly    = [authMiddleware, requireRole('owner')];
 router.get('/members', ...ownerOrAdmin, async (req, res) => {
   try {
     const members = await sql`
-      SELECT id, email, full_name, role, created_at
+      SELECT id, email, full_name, role, last_seen_at, created_at
       FROM users
       WHERE dealership_id = ${req.user.dealershipId}
         AND role IN ('owner', 'admin', 'member')
@@ -20,7 +20,8 @@ router.get('/members', ...ownerOrAdmin, async (req, res) => {
         created_at ASC
     `;
     res.json(members.map(m => ({
-      id: m.id, email: m.email, fullName: m.full_name, role: m.role, createdAt: m.created_at,
+      id: m.id, email: m.email, fullName: m.full_name, role: m.role,
+      lastSeenAt: m.last_seen_at, createdAt: m.created_at,
     })));
   } catch (err) {
     console.error(err);
@@ -108,6 +109,51 @@ router.put('/role/:userId', ...ownerOnly, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update role' });
+  }
+});
+
+// PUT /api/dealership/member/:userId/name — rename any member (owner/admin)
+router.put('/member/:userId/name', ...ownerOrAdmin, async (req, res) => {
+  const { fullName } = req.body;
+  if (!fullName?.trim()) return res.status(400).json({ error: 'Name is required' });
+  try {
+    const [user] = await sql`
+      UPDATE users SET full_name = ${fullName.trim()}
+      WHERE id = ${req.params.userId} AND dealership_id = ${req.user.dealershipId}
+      RETURNING id, full_name
+    `;
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ id: user.id, fullName: user.full_name });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update name' });
+  }
+});
+
+// PUT /api/dealership/logo — upload dealership logo (owner/admin)
+router.put('/logo', ...ownerOrAdmin, async (req, res) => {
+  const { logoData } = req.body;
+  if (!logoData) return res.status(400).json({ error: 'logoData is required' });
+  if (!logoData.startsWith('data:image/')) return res.status(400).json({ error: 'Invalid image format' });
+  // ~750KB base64 limit
+  if (logoData.length > 1_000_000) return res.status(400).json({ error: 'Image too large (max ~750KB)' });
+  try {
+    await sql`UPDATE dealerships SET logo_data = ${logoData} WHERE id = ${req.user.dealershipId}`;
+    res.json({ success: true, logoData });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save logo' });
+  }
+});
+
+// DELETE /api/dealership/logo — remove dealership logo (owner/admin)
+router.delete('/logo', ...ownerOrAdmin, async (req, res) => {
+  try {
+    await sql`UPDATE dealerships SET logo_data = NULL WHERE id = ${req.user.dealershipId}`;
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to remove logo' });
   }
 });
 

@@ -25,11 +25,16 @@ router.post('/profile', authMiddleware, async (req, res) => {
     if (flow === 'create') {
       if (!dealershipName?.trim()) return res.status(400).json({ error: 'Dealership name is required' });
 
+      const [existing] = await sql`
+        SELECT id FROM dealerships WHERE LOWER(name) = LOWER(${dealershipName.trim()})
+      `;
+      if (existing) return res.status(409).json({ error: 'A dealership with that name already exists. Please choose a different name.' });
+
       let code, attempts = 0;
       while (attempts < 10) {
         code = generateAccessCode();
-        const [existing] = await sql`SELECT id FROM dealerships WHERE access_code = ${code}`;
-        if (!existing) break;
+        const [existingCode] = await sql`SELECT id FROM dealerships WHERE access_code = ${code}`;
+        if (!existingCode) break;
         attempts++;
       }
       const [created] = await sql`
@@ -84,7 +89,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
   try {
     const [row] = await sql`
       SELECT u.id, u.auth_user_id, u.email, u.full_name, u.role, u.created_at,
-             d.id AS dealership_id, d.name AS dealership_name, d.access_code
+             d.id AS dealership_id, d.name AS dealership_name, d.access_code, d.logo_data
       FROM users u
       LEFT JOIN dealerships d ON d.id = u.dealership_id
       WHERE u.auth_user_id = ${req.user.authUserId}
@@ -94,8 +99,8 @@ router.get('/profile', authMiddleware, async (req, res) => {
     res.json({
       id: row.id, email: row.email, fullName: row.full_name, role: row.role,
       dealershipId: row.dealership_id, dealershipName: row.dealership_name,
-      // Only expose access code to owner and admin
       accessCode: ['owner', 'admin'].includes(row.role) ? row.access_code : undefined,
+      logoData: row.logo_data || undefined,
       createdAt: row.created_at,
     });
   } catch (err) {

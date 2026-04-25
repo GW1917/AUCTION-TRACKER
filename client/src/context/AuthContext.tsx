@@ -10,6 +10,7 @@ interface Profile {
   dealershipId: string;
   dealershipName: string;
   accessCode?: string;
+  logoData?: string;
 }
 
 interface AuthContextType {
@@ -17,6 +18,8 @@ interface AuthContextType {
   profileLoading: boolean;
   profileMissing: boolean;
   saveProfile: (payload: CreatePayload | JoinPayload) => Promise<Profile>;
+  refreshProfile: () => Promise<void>;
+  updateProfile: (patch: Partial<Profile>) => void;
   isAuthenticated: boolean;
 }
 
@@ -69,12 +72,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return data;
   }
 
+  async function refreshProfile() {
+    const { data } = await api.get('/auth/profile');
+    setProfile(data);
+  }
+
+  function updateProfile(patch: Partial<Profile>) {
+    setProfile(prev => prev ? { ...prev, ...patch } : prev);
+  }
+
   return (
     <AuthContext.Provider value={{
       profile,
       profileLoading,
       profileMissing,
       saveProfile,
+      refreshProfile,
+      updateProfile,
       isAuthenticated: !!session,
     }}>
       {children}

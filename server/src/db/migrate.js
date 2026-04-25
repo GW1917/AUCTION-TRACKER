@@ -16,9 +16,11 @@ async function migrate() {
         id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name         TEXT NOT NULL,
         access_code  TEXT UNIQUE NOT NULL,
+        logo_data    TEXT,
         created_at   TIMESTAMPTZ DEFAULT NOW()
       )
     `;
+    await sql`ALTER TABLE dealerships ADD COLUMN IF NOT EXISTS logo_data TEXT`;
     console.log('  ✅  dealerships');
 
     await sql`
@@ -29,11 +31,12 @@ async function migrate() {
         full_name        TEXT NOT NULL DEFAULT '',
         dealership_id    UUID REFERENCES dealerships(id) ON DELETE SET NULL,
         role             TEXT NOT NULL DEFAULT 'member',
+        last_seen_at     TIMESTAMPTZ,
         created_at       TIMESTAMPTZ DEFAULT NOW()
       )
     `;
-    // Add role column to existing tables that predate this migration
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'member'`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ`;
     console.log('  ✅  users');
 
     await sql`

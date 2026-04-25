@@ -42,6 +42,10 @@ async function authMiddleware(req, res, next) {
 
 // Attaches req.user.role, req.user.userId, req.user.dealershipId
 // and enforces that caller has one of the allowed roles.
+function touchLastSeen(authUserId) {
+  sql`UPDATE users SET last_seen_at = NOW() WHERE auth_user_id = ${authUserId}`.catch(() => {});
+}
+
 function requireRole(...roles) {
   return async (req, res, next) => {
     try {
@@ -54,6 +58,7 @@ function requireRole(...roles) {
       req.user.userId = user.id;
       req.user.role = user.role;
       req.user.dealershipId = user.dealership_id;
+      touchLastSeen(req.user.authUserId);
       next();
     } catch (err) {
       console.error('requireRole error:', err);
@@ -71,6 +76,7 @@ async function ensureProfile(req, res, next) {
     req.user.userId = user.id;
     req.user.role = user.role;
     req.user.dealershipId = user.dealership_id;
+    touchLastSeen(req.user.authUserId);
     next();
   } catch (err) {
     console.error('ensureProfile error:', err);

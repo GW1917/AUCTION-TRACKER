@@ -1,8 +1,10 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
+import { useInactivityLogout } from '../hooks/useInactivityLogout';
 
 export default function Layout() {
+  useInactivityLogout();
   return (
     <div className="min-h-screen bg-bg">
       <Sidebar />
