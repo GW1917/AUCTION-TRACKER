@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Search, Globe, Bookmark, Bell, LogOut, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Search, Globe, Bookmark, Bell, LogOut, ChevronRight, Settings } from 'lucide-react';
 import { authClient } from '../auth';
+import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS = [
   { to: '/dashboard',      icon: LayoutDashboard, label: 'Dashboard' },
@@ -12,6 +13,8 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const isOwnerOrAdmin = profile?.role === 'owner' || profile?.role === 'admin';
 
   async function handleSignOut() {
     await authClient.signOut();
@@ -76,7 +79,29 @@ export default function Sidebar() {
 
       <div className="gold-divider mx-3" />
 
-      <div className="px-3 py-4">
+      <div className="px-3 py-4 space-y-1">
+        {isOwnerOrAdmin && (
+          <NavLink to="/settings"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 relative group ${
+                isActive ? 'text-off-white' : 'text-muted hover:text-off-white hover:bg-white/[0.04]'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <div className="absolute inset-0 rounded-xl"
+                    style={{ background: 'linear-gradient(135deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05))', border: '1px solid rgba(201,168,76,0.2)' }}
+                  />
+                )}
+                <Settings size={18} className={`relative z-10 flex-shrink-0 ${isActive ? 'text-gold' : 'text-current'}`} />
+                <span className="relative z-10">Settings</span>
+                {isActive && <ChevronRight size={14} className="relative z-10 ml-auto text-gold/60" />}
+              </>
+            )}
+          </NavLink>
+        )}
         <button
           onClick={handleSignOut}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-danger hover:bg-danger/10 transition-all duration-150 w-full"

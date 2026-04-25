@@ -6,9 +6,10 @@ interface Profile {
   id: string;
   email: string;
   fullName: string;
+  role: 'owner' | 'admin' | 'member' | 'pending';
   dealershipId: string;
   dealershipName: string;
-  accessCode: string;
+  accessCode?: string;
 }
 
 interface AuthContextType {

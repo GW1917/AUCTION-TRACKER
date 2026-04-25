@@ -1,21 +1,17 @@
 const express = require('express');
-const crypto = require('crypto');
 const { sql } = require('../db/neon');
 const { authMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
 
 function generateAccessCode() {
-  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I/O to avoid confusion
-  const digits = '23456789'; // no 0/1
+  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
   const l = Array.from({ length: 3 }, () => letters[Math.floor(Math.random() * letters.length)]).join('');
   const d = Array.from({ length: 4 }, () => digits[Math.floor(Math.random() * digits.length)]).join('');
   return `${l}-${d}`;
 }
 
-// POST /api/auth/profile
-// flow: 'create' — creates a new dealership and links the user
-// flow: 'join'   — finds dealership by access code and links the user
 router.post('/profile', authMiddleware, async (req, res) => {
   const { flow, dealershipName, accessCode, fullName } = req.body;
 
@@ -27,10 +23,8 @@ router.post('/profile', authMiddleware, async (req, res) => {
     let dealership;
 
     if (flow === 'create') {
-      if (!dealershipName?.trim()) {
-        return res.status(400).json({ error: 'Dealership name is required' });
-      }
-      // Generate a unique access code
+      if (!dealershipName?.trim()) return res.status(400).json({ error: 'Dealership name is required' });
+
       let code, attempts = 0;
       while (attempts < 10) {
         code = generateAccessCode();
@@ -39,76 +33,69 @@ router.post('/profile', authMiddleware, async (req, res) => {
         attempts++;
       }
       const [created] = await sql`
-        INSERT INTO dealerships (name, access_code)
-        VALUES (${dealershipName.trim()}, ${code})
-        RETURNING *
+        INSERT INTO dealerships (name, access_code) VALUES (${dealershipName.trim()}, ${code}) RETURNING *
       `;
       dealership = created;
+
+      const [user] = await sql`
+        INSERT INTO users (auth_user_id, email, full_name, dealership_id, role)
+        VALUES (${req.user.authUserId}, ${req.user.email || ''}, ${(fullName || '').trim()}, ${dealership.id}, 'owner')
+        ON CONFLICT (auth_user_id) DO UPDATE SET
+          full_name = EXCLUDED.full_name, email = EXCLUDED.email,
+          dealership_id = EXCLUDED.dealership_id, role = 'owner'
+        RETURNING *
+      `;
+
+      return res.status(201).json({
+        id: user.id, email: user.email, fullName: user.full_name, role: 'owner',
+        dealershipId: dealership.id, dealershipName: dealership.name, accessCode: dealership.access_code,
+      });
     } else {
-      // join
-      if (!accessCode?.trim()) {
-        return res.status(400).json({ error: 'Access code is required' });
-      }
+      // join — becomes pending until approved
+      if (!accessCode?.trim()) return res.status(400).json({ error: 'Access code is required' });
+
       const [found] = await sql`
         SELECT * FROM dealerships WHERE access_code = ${accessCode.trim().toUpperCase()}
       `;
-      if (!found) {
-        return res.status(404).json({ error: 'Invalid access code. Check with your dealership admin.' });
-      }
+      if (!found) return res.status(404).json({ error: 'Invalid access code. Check with your dealership admin.' });
       dealership = found;
+
+      const [user] = await sql`
+        INSERT INTO users (auth_user_id, email, full_name, dealership_id, role)
+        VALUES (${req.user.authUserId}, ${req.user.email || ''}, ${(fullName || '').trim()}, ${dealership.id}, 'pending')
+        ON CONFLICT (auth_user_id) DO UPDATE SET
+          full_name = EXCLUDED.full_name, email = EXCLUDED.email,
+          dealership_id = EXCLUDED.dealership_id, role = 'pending'
+        RETURNING *
+      `;
+
+      return res.status(201).json({
+        id: user.id, email: user.email, fullName: user.full_name, role: 'pending',
+        dealershipId: dealership.id, dealershipName: dealership.name,
+      });
     }
-
-    const [user] = await sql`
-      INSERT INTO users (auth_user_id, email, full_name, dealership_id)
-      VALUES (
-        ${req.user.authUserId},
-        ${req.user.email || ''},
-        ${(fullName || '').trim()},
-        ${dealership.id}
-      )
-      ON CONFLICT (auth_user_id) DO UPDATE SET
-        full_name     = EXCLUDED.full_name,
-        email         = EXCLUDED.email,
-        dealership_id = EXCLUDED.dealership_id
-      RETURNING *
-    `;
-
-    res.status(201).json({
-      id: user.id,
-      email: user.email,
-      fullName: user.full_name,
-      dealershipId: dealership.id,
-      dealershipName: dealership.name,
-      accessCode: dealership.access_code,
-    });
   } catch (err) {
     console.error('Profile creation error:', err);
     res.status(500).json({ error: 'Failed to save profile' });
   }
 });
 
-// GET /api/auth/profile
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
     const [row] = await sql`
-      SELECT u.id, u.auth_user_id, u.email, u.full_name, u.created_at,
+      SELECT u.id, u.auth_user_id, u.email, u.full_name, u.role, u.created_at,
              d.id AS dealership_id, d.name AS dealership_name, d.access_code
       FROM users u
       LEFT JOIN dealerships d ON d.id = u.dealership_id
       WHERE u.auth_user_id = ${req.user.authUserId}
     `;
-
-    if (!row) {
-      return res.status(404).json({ error: 'Profile not found', code: 'PROFILE_MISSING' });
-    }
+    if (!row) return res.status(404).json({ error: 'Profile not found', code: 'PROFILE_MISSING' });
 
     res.json({
-      id: row.id,
-      email: row.email,
-      fullName: row.full_name,
-      dealershipId: row.dealership_id,
-      dealershipName: row.dealership_name,
-      accessCode: row.access_code,
+      id: row.id, email: row.email, fullName: row.full_name, role: row.role,
+      dealershipId: row.dealership_id, dealershipName: row.dealership_name,
+      // Only expose access code to owner and admin
+      accessCode: ['owner', 'admin'].includes(row.role) ? row.access_code : undefined,
       createdAt: row.created_at,
     });
   } catch (err) {

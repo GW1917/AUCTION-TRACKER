@@ -9,6 +9,7 @@ import Search from './pages/Search';
 import Results from './pages/Results';
 import AuctionSites from './pages/AuctionSites';
 import SavedSearches from './pages/SavedSearches';
+import Settings from './pages/Settings';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = authClient.useSession();
@@ -41,6 +42,7 @@ function AppRoutes() {
         <Route path="results"        element={<Results />} />
         <Route path="auction-sites"  element={<AuctionSites />} />
         <Route path="saved-searches" element={<SavedSearches />} />
+        <Route path="settings"       element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
