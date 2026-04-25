@@ -1,0 +1,118 @@
+// TODO: Replace mock data with real authenticated API call or Puppeteer/Playwright
+// session scraping for TradeRev (traderev.com).
+// Real flow: Authenticate at https://www.traderev.com/en-us/login, obtain
+// session token, query the vehicle inventory API with filter parameters.
+
+const { filterListings } = require('../utils/filterListings');
+
+const MOCK_LISTINGS = [
+  {
+    id: 'trv-001',
+    vin: '1C6SRFLT8MN567890',
+    year: 2021,
+    make: 'RAM',
+    model: '1500',
+    trim: 'Big Horn Crew Cab 4x4',
+    color: 'Bright White Clearcoat',
+    colorHex: '#F2F2F2',
+    mileage: 28040,
+    starRating: 4,
+    location: 'Buffalo, NY',
+    distance: 434,
+    imageUrl: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.traderev.com/autos/listing/mock-trv-001',
+    price: 41500,
+  },
+  {
+    id: 'trv-002',
+    vin: '1C4RDHDG6LC234567',
+    year: 2020,
+    make: 'Dodge',
+    model: 'Durango',
+    trim: 'R/T AWD',
+    color: 'Destroyer Grey',
+    colorHex: '#565C60',
+    mileage: 35240,
+    starRating: 3,
+    location: 'Detroit, MI',
+    distance: 310,
+    imageUrl: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.traderev.com/autos/listing/mock-trv-002',
+    price: 38800,
+  },
+  {
+    id: 'trv-003',
+    vin: '2C4RC1BG1NR456789',
+    year: 2022,
+    make: 'Chrysler',
+    model: 'Pacifica',
+    trim: 'Touring L FWD',
+    color: 'Velvet Red Pearl',
+    colorHex: '#7A1C2E',
+    mileage: 22010,
+    starRating: 4,
+    location: 'Cleveland, OH',
+    distance: 228,
+    imageUrl: 'https://images.unsplash.com/photo-1547036967-23b3e2b4e6a0?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.traderev.com/autos/listing/mock-trv-003',
+    price: 29500,
+  },
+  {
+    id: 'trv-004',
+    vin: '3C4NJCAB7KT567890',
+    year: 2019,
+    make: 'Jeep',
+    model: 'Compass',
+    trim: 'Trailhawk 4WD',
+    color: 'Olive Green Pearl',
+    colorHex: '#4A5A3A',
+    mileage: 51020,
+    starRating: 3,
+    location: 'Pittsburgh, PA',
+    distance: 367,
+    imageUrl: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.traderev.com/autos/listing/mock-trv-004',
+    price: 19800,
+  },
+  {
+    id: 'trv-005',
+    vin: '2C7WDTBT5MR678901',
+    year: 2021,
+    make: 'RAM',
+    model: 'ProMaster City',
+    trim: 'SLT Wagon',
+    color: 'Bright White Clearcoat',
+    colorHex: '#F2F2F2',
+    mileage: 31540,
+    starRating: 4,
+    location: 'Buffalo, NY',
+    distance: 434,
+    imageUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.traderev.com/autos/listing/mock-trv-005',
+    price: 26500,
+  },
+  {
+    id: 'trv-006',
+    vin: '2C3CDZBT0LH789012',
+    year: 2020,
+    make: 'Dodge',
+    model: 'Challenger',
+    trim: 'R/T Scat Pack',
+    color: 'Hellraisin',
+    colorHex: '#4B1B5A',
+    mileage: 18040,
+    starRating: 5,
+    location: 'Cincinnati, OH',
+    distance: 196,
+    imageUrl: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.traderev.com/autos/listing/mock-trv-006',
+    price: 38000,
+  },
+];
+
+async function search(credentials, filters) {
+  await new Promise((r) => setTimeout(r, 650 + Math.random() * 550));
+  return filterListings(MOCK_LISTINGS, filters);
+}
+
+module.exports = { search };

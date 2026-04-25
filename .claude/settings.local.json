@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/garrettuptmore/.nvm/versions/**)",
+      "Bash(mdfind -name \"node\" kind:executable)",
+      "mcp__Desktop_Commander__start_process",
+      "mcp__Desktop_Commander__read_process_output",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(grep -E \"^vite$|lucide|react$\" ls \"/Users/garrettuptmore/AUCTION TRACKER/client/node_modules/.bin/\")",
+      "Bash(git check-ignore *)"
+    ]
+  }
+}

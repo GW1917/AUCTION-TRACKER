@@ -1,0 +1,118 @@
+// TODO: Replace mock data with real authenticated API call or Puppeteer/Playwright
+// session scraping for SmartAuction (smartauction.com).
+// Real flow: Authenticate via https://www.smartauction.com/login with GM dealer
+// credentials, obtain session token, query inventory search API.
+
+const { filterListings } = require('../utils/filterListings');
+
+const MOCK_LISTINGS = [
+  {
+    id: 'sma-001',
+    vin: '1G1YB2D42N5123456',
+    year: 2022,
+    make: 'Chevrolet',
+    model: 'Corvette',
+    trim: 'Stingray 3LT Coupe',
+    color: 'Amplify Orange Tintcoat',
+    colorHex: '#C25A00',
+    mileage: 4520,
+    starRating: 5,
+    location: 'Memphis, TN',
+    distance: 302,
+    imageUrl: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.smartauction.com/vehicles/mock-sma-001',
+    price: 62000,
+  },
+  {
+    id: 'sma-002',
+    vin: '1GT49PEY8MF234567',
+    year: 2021,
+    make: 'GMC',
+    model: 'Sierra 1500',
+    trim: 'Denali Crew Cab 4WD',
+    color: 'Onyx Black',
+    colorHex: '#1A1A1A',
+    mileage: 24010,
+    starRating: 5,
+    location: 'Nashville, TN',
+    distance: 145,
+    imageUrl: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.smartauction.com/vehicles/mock-sma-002',
+    price: 52500,
+  },
+  {
+    id: 'sma-003',
+    vin: '1GYS4BKJXLR345678',
+    year: 2020,
+    make: 'Cadillac',
+    model: 'Escalade',
+    trim: 'Premium Luxury 4WD',
+    color: 'Dark Adriatic Blue Metallic',
+    colorHex: '#1A2E4A',
+    mileage: 38020,
+    starRating: 4,
+    location: 'Atlanta, GA',
+    distance: 87,
+    imageUrl: 'https://images.unsplash.com/photo-1546768292-e9a3c8b3eb3d?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.smartauction.com/vehicles/mock-sma-003',
+    price: 68500,
+  },
+  {
+    id: 'sma-004',
+    vin: 'LRBFZSR4XND456789',
+    year: 2022,
+    make: 'Buick',
+    model: 'Envision',
+    trim: 'Avenir AWD',
+    color: 'Summit White',
+    colorHex: '#F2F2F2',
+    mileage: 16510,
+    starRating: 4,
+    location: 'Birmingham, AL',
+    distance: 58,
+    imageUrl: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.smartauction.com/vehicles/mock-sma-004',
+    price: 35000,
+  },
+  {
+    id: 'sma-005',
+    vin: '1GNSCCKJ5MR567890',
+    year: 2021,
+    make: 'Chevrolet',
+    model: 'Tahoe',
+    trim: 'Z71 4WD',
+    color: 'Iridescent Pearl Tricoat',
+    colorHex: '#E0DCE0',
+    mileage: 31040,
+    starRating: 4,
+    location: 'New Orleans, LA',
+    distance: 272,
+    imageUrl: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.smartauction.com/vehicles/mock-sma-005',
+    price: 48500,
+  },
+  {
+    id: 'sma-006',
+    vin: '1GTG6CE07P1678901',
+    year: 2023,
+    make: 'GMC',
+    model: 'Canyon',
+    trim: 'Elevation 4WD Crew Cab',
+    color: 'Volcanic Red Tintcoat',
+    colorHex: '#8B1A00',
+    mileage: 7230,
+    starRating: 5,
+    location: 'Jackson, MS',
+    distance: 198,
+    imageUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.smartauction.com/vehicles/mock-sma-006',
+    price: 38000,
+  },
+];
+
+async function search(credentials, filters) {
+  await new Promise((r) => setTimeout(r, 750 + Math.random() * 450));
+  return filterListings(MOCK_LISTINGS, filters);
+}
+
+module.exports = { search };

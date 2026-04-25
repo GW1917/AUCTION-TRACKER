@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "client",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": ["/Users/garrettuptmore/AUCTION TRACKER/start-client.sh"],
+      "cwd": "/Users/garrettuptmore/AUCTION TRACKER/client",
+      "port": 5173
+    }
+  ]
+}

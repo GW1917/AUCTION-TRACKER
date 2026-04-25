@@ -1,0 +1,118 @@
+// TODO: Replace mock data with real authenticated API call or Puppeteer/Playwright
+// session scraping for OVE.com (ove.com / ovecars.com).
+// Real flow: POST to https://www.ove.com/api/auth with credentials, then
+// use token to query the vehicle inventory search endpoint.
+
+const { filterListings } = require('../utils/filterListings');
+
+const MOCK_LISTINGS = [
+  {
+    id: 'ove-001',
+    vin: '2HGFC2F59MH543210',
+    year: 2019,
+    make: 'Honda',
+    model: 'Civic',
+    trim: 'EX Sedan',
+    color: 'Lunar Silver Metallic',
+    colorHex: '#B4B9C0',
+    mileage: 48210,
+    starRating: 3,
+    location: 'Dallas, TX',
+    distance: 167,
+    imageUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.ove.com/buy/detail/mock-ove-001',
+    price: 16500,
+  },
+  {
+    id: 'ove-002',
+    vin: '2T1BURHE5KC234567',
+    year: 2020,
+    make: 'Toyota',
+    model: 'Corolla',
+    trim: 'XSE CVT',
+    color: 'Blueprint',
+    colorHex: '#2B4B7E',
+    mileage: 35012,
+    starRating: 4,
+    location: 'Houston, TX',
+    distance: 98,
+    imageUrl: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.ove.com/buy/detail/mock-ove-002',
+    price: 18800,
+  },
+  {
+    id: 'ove-003',
+    vin: '3FA6P0K99JR234567',
+    year: 2018,
+    make: 'Ford',
+    model: 'Fusion',
+    trim: 'Titanium FWD',
+    color: 'Magnetic Metallic',
+    colorHex: '#5A6070',
+    mileage: 62340,
+    starRating: 3,
+    location: 'Phoenix, AZ',
+    distance: 398,
+    imageUrl: 'https://images.unsplash.com/photo-1547036967-23b3e2b4e6a0?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.ove.com/buy/detail/mock-ove-003',
+    price: 14200,
+  },
+  {
+    id: 'ove-004',
+    vin: '5NPE34AF3MH123456',
+    year: 2021,
+    make: 'Hyundai',
+    model: 'Sonata',
+    trim: 'SEL',
+    color: 'Sonic Silver',
+    colorHex: '#A8A8A0',
+    mileage: 29480,
+    starRating: 4,
+    location: 'Denver, CO',
+    distance: 445,
+    imageUrl: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.ove.com/buy/detail/mock-ove-004',
+    price: 19900,
+  },
+  {
+    id: 'ove-005',
+    vin: 'JM3KFBDM5L0856789',
+    year: 2020,
+    make: 'Mazda',
+    model: 'CX-5',
+    trim: 'Grand Touring AWD',
+    color: 'Soul Red Crystal Metallic',
+    colorHex: '#8B1A1A',
+    mileage: 22010,
+    starRating: 5,
+    location: 'Salt Lake City, UT',
+    distance: 478,
+    imageUrl: 'https://images.unsplash.com/photo-1546768292-e9a3c8b3eb3d?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.ove.com/buy/detail/mock-ove-005',
+    price: 24500,
+  },
+  {
+    id: 'ove-006',
+    vin: '4S4BSANC7K3345678',
+    year: 2019,
+    make: 'Subaru',
+    model: 'Outback',
+    trim: 'Limited 3.6R',
+    color: 'Crystal Black Silica',
+    colorHex: '#1A1A1A',
+    mileage: 55010,
+    starRating: 3,
+    location: 'Portland, OR',
+    distance: 489,
+    imageUrl: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.ove.com/buy/detail/mock-ove-006',
+    price: 20800,
+  },
+];
+
+async function search(credentials, filters) {
+  await new Promise((r) => setTimeout(r, 800 + Math.random() * 400));
+  return filterListings(MOCK_LISTINGS, filters);
+}
+
+module.exports = { search };

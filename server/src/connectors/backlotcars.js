@@ -1,0 +1,118 @@
+// TODO: Replace mock data with real authenticated API call or Puppeteer/Playwright
+// session scraping for BacklotCars (backlotcars.com).
+// Real flow: Authenticate via https://www.backlotcars.com/login, retrieve
+// session token, POST to search API with structured filter payload.
+
+const { filterListings } = require('../utils/filterListings');
+
+const MOCK_LISTINGS = [
+  {
+    id: 'blc-001',
+    vin: 'WBA4J1C56KBM34567',
+    year: 2020,
+    make: 'BMW',
+    model: '330i',
+    trim: 'xDrive Sedan',
+    color: 'Portimao Blue Metallic',
+    colorHex: '#1B4BA0',
+    mileage: 32540,
+    starRating: 4,
+    location: 'Cincinnati, OH',
+    distance: 196,
+    imageUrl: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.backlotcars.com/vehicles/mock-blc-001',
+    price: 31000,
+  },
+  {
+    id: 'blc-002',
+    vin: '55SWF4JB4MU234567',
+    year: 2021,
+    make: 'Mercedes-Benz',
+    model: 'C 300',
+    trim: '4MATIC Sedan',
+    color: 'Polar White',
+    colorHex: '#F5F5F0',
+    mileage: 18020,
+    starRating: 5,
+    location: 'Louisville, KY',
+    distance: 143,
+    imageUrl: 'https://images.unsplash.com/photo-1547036967-23b3e2b4e6a0?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.backlotcars.com/vehicles/mock-blc-002',
+    price: 38500,
+  },
+  {
+    id: 'blc-003',
+    vin: 'WAUENAF40KA123456',
+    year: 2019,
+    make: 'Audi',
+    model: 'A4',
+    trim: 'Premium Plus quattro',
+    color: 'Florett Silver Metallic',
+    colorHex: '#C0C4C8',
+    mileage: 44120,
+    starRating: 3,
+    location: 'Pittsburgh, PA',
+    distance: 367,
+    imageUrl: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.backlotcars.com/vehicles/mock-blc-003',
+    price: 28900,
+  },
+  {
+    id: 'blc-004',
+    vin: '1G6DT5RK8N0123456',
+    year: 2022,
+    make: 'Cadillac',
+    model: 'CT5',
+    trim: 'Premium Luxury AWD',
+    color: 'Stellar Black Metallic',
+    colorHex: '#1C1C1C',
+    mileage: 11040,
+    starRating: 5,
+    location: 'Cleveland, OH',
+    distance: 228,
+    imageUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.backlotcars.com/vehicles/mock-blc-004',
+    price: 42000,
+  },
+  {
+    id: 'blc-005',
+    vin: '1LNHM94R09G634567',
+    year: 2020,
+    make: 'Lincoln',
+    model: 'Continental',
+    trim: 'Reserve AWD',
+    color: 'Chroma Caviar',
+    colorHex: '#2A2A2A',
+    mileage: 28540,
+    starRating: 4,
+    location: 'St. Louis, MO',
+    distance: 418,
+    imageUrl: 'https://images.unsplash.com/photo-1546768292-e9a3c8b3eb3d?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.backlotcars.com/vehicles/mock-blc-005',
+    price: 34200,
+  },
+  {
+    id: 'blc-006',
+    vin: 'YV4A22PK4M1234567',
+    year: 2021,
+    make: 'Volvo',
+    model: 'XC60',
+    trim: 'T6 Inscription AWD',
+    color: 'Crystal White Pearl',
+    colorHex: '#EEF0EE',
+    mileage: 19080,
+    starRating: 5,
+    location: 'Buffalo, NY',
+    distance: 434,
+    imageUrl: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=640&h=360&fit=crop&q=80',
+    listingUrl: 'https://www.backlotcars.com/vehicles/mock-blc-006',
+    price: 39800,
+  },
+];
+
+async function search(credentials, filters) {
+  await new Promise((r) => setTimeout(r, 900 + Math.random() * 400));
+  return filterListings(MOCK_LISTINGS, filters);
+}
+
+module.exports = { search };

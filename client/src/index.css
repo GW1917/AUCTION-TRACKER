@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #0A0C10;
+    --surface: #12151C;
+    --border: #1E2330;
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --white: #F5F5F0;
+    --muted: #6B7280;
+    --success: #2ECC71;
+    --danger: #E74C3C;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg text-off-white font-body;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3 {
+    @apply font-display;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0A0C10;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1E2330;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #C9A84C40;
+  }
+
+  /* Input autofill override */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #12151C inset;
+    -webkit-text-fill-color: #F5F5F0;
+    caret-color: #F5F5F0;
+  }
+}
+
+@layer components {
+  /* Glass card */
+  .glass-card {
+    background: rgba(18, 21, 28, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(30, 35, 48, 0.8);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .glass-card-hover {
+    transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+  }
+
+  .glass-card-hover:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(201, 168, 76, 0.25);
+    border-color: rgba(201, 168, 76, 0.25);
+    transform: translateY(-2px);
+  }
+
+  /* Gold gradient button */
+  .btn-gold {
+    @apply font-body font-semibold text-bg rounded-xl px-6 py-3 transition-all duration-200;
+    background: linear-gradient(135deg, #C9A84C 0%, #E8C97A 50%, #C9A84C 100%);
+    background-size: 200% auto;
+    color: #0A0C10;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 15px rgba(201, 168, 76, 0.25);
+  }
+
+  .btn-gold:hover {
+    background-position: right center;
+    box-shadow: 0 6px 20px rgba(201, 168, 76, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .btn-gold:active {
+    transform: translateY(0);
+  }
+
+  /* Shimmer button variant */
+  .btn-gold-shimmer {
+    @apply btn-gold;
+    background: linear-gradient(90deg, #C9A84C 0%, #E8C97A 20%, #F5D98A 40%, #E8C97A 60%, #C9A84C 80%, #E8C97A 100%);
+    background-size: 200% auto;
+    animation: shimmer 2.5s linear infinite;
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply font-body font-medium text-muted rounded-xl px-4 py-2.5 transition-all duration-200;
+    background: transparent;
+    border: 1px solid rgba(30, 35, 48, 0.8);
+    cursor: pointer;
+  }
+
+  .btn-ghost:hover {
+    @apply text-off-white;
+    border-color: rgba(201, 168, 76, 0.3);
+    background: rgba(201, 168, 76, 0.05);
+  }
+
+  /* Gold outline button */
+  .btn-outline-gold {
+    @apply font-body font-medium text-gold rounded-xl px-4 py-2.5 transition-all duration-200;
+    background: transparent;
+    border: 1px solid rgba(201, 168, 76, 0.4);
+    cursor: pointer;
+  }
+
+  .btn-outline-gold:hover {
+    background: rgba(201, 168, 76, 0.1);
+    border-color: rgba(201, 168, 76, 0.7);
+  }
+
+  /* Form input */
+  .input-luxury {
+    @apply w-full rounded-xl px-4 py-3 text-off-white font-body text-sm outline-none transition-all duration-200;
+    background: rgba(10, 12, 16, 0.8);
+    border: 1px solid rgba(30, 35, 48, 0.9);
+  }
+
+  .input-luxury::placeholder {
+    @apply text-muted;
+  }
+
+  .input-luxury:focus {
+    border-color: rgba(201, 168, 76, 0.5);
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+  }
+
+  /* Gold divider */
+  .gold-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.3), transparent);
+  }
+
+  /* Auction site badge */
+  .site-badge {
+    @apply inline-flex items-center justify-center rounded-md text-xs font-bold uppercase tracking-wide px-2 py-0.5;
+  }
+
+  /* Fade up animation on mount */
+  .animate-fade-up {
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  /* Staggered children */
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+
+  /* Loading spinner */
+  .spinner-gold {
+    @apply rounded-full border-2 animate-spin;
+    border-color: rgba(201, 168, 76, 0.2);
+    border-top-color: #C9A84C;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes pulseGold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(201, 168, 76, 0); }
+}
