@@ -5,16 +5,30 @@ import api from '../api';
 interface Profile {
   id: string;
   email: string;
-  dealershipName: string;
   fullName: string;
+  dealershipId: string;
+  dealershipName: string;
+  accessCode: string;
 }
 
 interface AuthContextType {
   profile: Profile | null;
   profileLoading: boolean;
   profileMissing: boolean;
-  saveProfile: (dealershipName: string, fullName: string) => Promise<void>;
+  saveProfile: (payload: CreatePayload | JoinPayload) => Promise<Profile>;
   isAuthenticated: boolean;
+}
+
+export interface CreatePayload {
+  flow: 'create';
+  dealershipName: string;
+  fullName: string;
+}
+
+export interface JoinPayload {
+  flow: 'join';
+  accessCode: string;
+  fullName: string;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -47,10 +61,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setProfileLoading(false));
   }, [session?.user?.id, isPending]);
 
-  async function saveProfile(dealershipName: string, fullName: string) {
-    const { data } = await api.post('/auth/profile', { dealershipName, fullName });
+  async function saveProfile(payload: CreatePayload | JoinPayload): Promise<Profile> {
+    const { data } = await api.post('/auth/profile', payload);
     setProfile(data);
     setProfileMissing(false);
+    return data;
   }
 
   return (

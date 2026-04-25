@@ -11,14 +11,25 @@ async function migrate() {
   console.log('\n🔧  Running Auction Tracker database migrations...\n');
 
   try {
+    // Dealerships — each has a unique access code for inviting team members
+    await sql`
+      CREATE TABLE IF NOT EXISTS dealerships (
+        id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name         TEXT NOT NULL,
+        access_code  TEXT UNIQUE NOT NULL,
+        created_at   TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+    console.log('  ✅  dealerships');
+
     // Users — keyed by Neon Auth (Better Auth) user ID
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         auth_user_id     TEXT UNIQUE NOT NULL,
         email            TEXT NOT NULL,
-        dealership_name  TEXT NOT NULL,
         full_name        TEXT NOT NULL DEFAULT '',
+        dealership_id    UUID REFERENCES dealerships(id) ON DELETE SET NULL,
         created_at       TIMESTAMPTZ DEFAULT NOW()
       )
     `;
@@ -27,7 +38,7 @@ async function migrate() {
     await sql`
       CREATE TABLE IF NOT EXISTS auction_sites (
         id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id             UUID REFERENCES users(id) ON DELETE CASCADE,
+        dealership_id       UUID REFERENCES dealerships(id) ON DELETE CASCADE,
         site_name           TEXT NOT NULL,
         site_url            TEXT NOT NULL,
         login_id            TEXT NOT NULL,
@@ -41,6 +52,7 @@ async function migrate() {
     await sql`
       CREATE TABLE IF NOT EXISTS saved_searches (
         id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
         user_id      UUID REFERENCES users(id) ON DELETE CASCADE,
         search_name  TEXT NOT NULL,
         filters_json JSONB NOT NULL,
