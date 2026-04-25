@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .finally(() => setProfileLoading(false));
-  }, [session?.user.id, isPending]);
+  }, [session?.user?.id, isPending]);
 
   async function saveProfile(dealershipName: string, fullName: string) {
     const { data } = await api.post('/auth/profile', { dealershipName, fullName });
