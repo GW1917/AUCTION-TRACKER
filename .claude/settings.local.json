@@ -14,7 +14,22 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(node src/db/migrate.js)",
-      "Bash(/Users/garrettuptmore/.nvm/versions/node/v20.20.2/bin/node src/db/migrate.js)"
+      "Bash(/Users/garrettuptmore/.nvm/versions/node/v20.20.2/bin/node src/db/migrate.js)",
+      "Bash(/Users/garrettuptmore/.nvm/versions/node/v20.20.2/bin/npm run *)",
+      "Bash(export PATH=\"/Users/garrettuptmore/.nvm/versions/node/v20.20.2/bin:$PATH\")",
+      "Bash(npm run *)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(curl -s \"https://stunning-essence-production-e22d.up.railway.app/\")",
+      "Bash(npm list *)",
+      "Bash(railway --version)",
+      "Bash(railway projects *)",
+      "Bash(railway project *)",
+      "Bash(railway status *)",
+      "Bash(railway whoami *)",
+      "Bash(railway up *)",
+      "Bash(railway service *)",
+      "Bash(railway environment *)",
+      "Bash(railway logs *)"
     ]
   }
 }

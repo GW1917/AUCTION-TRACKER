@@ -1,0 +1,50 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-server:
+    name: Deploy Server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+      - name: Deploy server
+        run: railway up --service AUCTION-TRACKER --detach
+        working-directory: server
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: e2e23a21-d950-491f-8a9d-5ef36f9bcc4e
+          RAILWAY_ENVIRONMENT_ID: ad87f701-a0c6-4d0b-8f7a-073dc562082a
+
+  deploy-client:
+    name: Deploy Client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: client
+      - name: Build
+        run: npm run build
+        working-directory: client
+        env:
+          VITE_API_URL: https://auction-tracker-production.up.railway.app
+          VITE_NEON_AUTH_URL: https://ep-fancy-cell-ane5rb1m.neonauth.c-6.us-east-1.aws.neon.tech/neondb/auth
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+      - name: Deploy client
+        run: railway up --service stunning-essence --detach
+        working-directory: client
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: e2e23a21-d950-491f-8a9d-5ef36f9bcc4e
+          RAILWAY_ENVIRONMENT_ID: ad87f701-a0c6-4d0b-8f7a-073dc562082a
