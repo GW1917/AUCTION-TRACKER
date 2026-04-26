@@ -38,12 +38,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '1.0.0' });
 });
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`\n🚗  Auction Tracker API running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚗  Auction Tracker API running on port ${PORT}`);
   console.log(`    Environment: ${process.env.NODE_ENV || 'development'}\n`);
 });
