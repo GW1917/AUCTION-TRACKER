@@ -30,13 +30,13 @@ export default function Sidebar() {
       }}
     >
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-border/50">
+      <div className="px-3 py-4 border-b border-border/50">
         {profile?.logoData ? (
           <div className="flex items-center">
             <img
               src={profile.logoData}
               alt={profile.dealershipName ?? 'Dealership logo'}
-              className="w-full max-h-20 object-contain rounded"
+              className="w-full max-h-40 object-contain rounded"
             />
           </div>
         ) : (
