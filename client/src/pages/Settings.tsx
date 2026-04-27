@@ -6,6 +6,27 @@ import {
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 
+// Render the first page of a PDF file to a PNG data URL
+async function pdfToDataUrl(file: File): Promise<string> {
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.min.mjs',
+    import.meta.url,
+  ).toString();
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const page = await pdf.getPage(1);
+
+  const viewport = page.getViewport({ scale: 2 }); // 2× for high-res
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+
+  await page.render({ canvasContext: canvas.getContext('2d')!, viewport }).promise;
+  return canvas.toDataURL('image/png');
+}
+
 interface Member {
   id: string;
   email: string;
@@ -143,40 +164,42 @@ export default function Settings() {
     if (!file) return;
     setLogoError('');
 
-    if (!file.type.startsWith('image/')) {
-      setLogoError('Only image files are supported (PNG, JPG, SVG). PDFs cannot be used as logos.');
+    const isPDF = file.type === 'application/pdf';
+    if (!file.type.startsWith('image/') && !isPDF) {
+      setLogoError('Please upload a PNG, JPG, SVG, or PDF file.');
       if (fileRef.current) fileRef.current.value = '';
       return;
     }
-    // 5 MB limit — warn before sending
     if (file.size > 5_000_000) {
-      setLogoError('Image is too large. Please use an image under 5 MB.');
+      setLogoError('File is too large. Please use a file under 5 MB.');
       if (fileRef.current) fileRef.current.value = '';
       return;
     }
 
     setLogoUploading(true);
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const logoData = reader.result as string;
-        const { data } = await api.put('/dealership/logo', { logoData });
-        updateProfile({ logoData: data.logoData });
-        setLogoError('');
-      } catch (err: any) {
-        const msg = err?.response?.data?.error || 'Upload failed. Please try again.';
-        setLogoError(msg);
-      } finally {
-        setLogoUploading(false);
-        if (fileRef.current) fileRef.current.value = '';
+    try {
+      let logoData: string;
+      if (isPDF) {
+        // Convert first page of PDF → PNG data URL
+        logoData = await pdfToDataUrl(file);
+      } else {
+        logoData = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
       }
-    };
-    reader.onerror = () => {
-      setLogoError('Could not read file. Please try a different image.');
+      const { data } = await api.put('/dealership/logo', { logoData });
+      updateProfile({ logoData: data.logoData });
+      setLogoError('');
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || 'Upload failed. Please try again.';
+      setLogoError(msg);
+    } finally {
       setLogoUploading(false);
       if (fileRef.current) fileRef.current.value = '';
-    };
-    reader.readAsDataURL(file);
+    }
   }
 
   async function removeLogo() {
@@ -216,7 +239,7 @@ export default function Settings() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoFile} />
+            <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleLogoFile} />
             <button
               onClick={() => fileRef.current?.click()}
               disabled={logoUploading || !isOwnerOrAdmin}
@@ -235,7 +258,7 @@ export default function Settings() {
                 Remove Logo
               </button>
             )}
-            <p className="text-xs text-muted">PNG, JPG, or SVG — max 5 MB</p>
+            <p className="text-xs text-muted">PNG, JPG, SVG, or PDF — max 5 MB</p>
           </div>
         </div>
         {logoError && (
