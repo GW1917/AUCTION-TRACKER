@@ -1,28 +1,22 @@
-const NEON_AUTH_URL = process.env.NEON_AUTH_URL;
+const { createRemoteJWKSet, jwtVerify } = require('jose');
 const { sql } = require('../db/neon');
 
-const sessionCache = new Map();
+const NEON_AUTH_URL = process.env.NEON_AUTH_URL;
 
-async function verifyNeonAuthToken(token) {
-  const cached = sessionCache.get(token);
-  if (cached && cached.expiresAt > Date.now()) return cached.authUser;
+// The JWT issuer/audience is the origin only (no path), even though
+// NEON_AUTH_URL includes the /neondb/auth path.
+function getNeonOrigin() {
+  return new URL(NEON_AUTH_URL).origin;
+}
 
-  const resp = await fetch(`${NEON_AUTH_URL}/get-session`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!resp.ok) throw new Error('Invalid or expired token');
-
-  const data = await resp.json();
-  if (!data?.user) throw new Error('Invalid session response');
-
-  sessionCache.set(token, { authUser: data.user, expiresAt: Date.now() + 5 * 60 * 1000 });
-  if (sessionCache.size > 500) {
-    const now = Date.now();
-    for (const [k, v] of sessionCache.entries()) {
-      if (v.expiresAt < now) sessionCache.delete(k);
-    }
+// Cache the JWKS remote key set (auto-refreshes on key rotation)
+let _jwks = null;
+function getJWKS() {
+  if (!_jwks) {
+    const jwksUrl = new URL(`${NEON_AUTH_URL}/.well-known/jwks.json`);
+    _jwks = createRemoteJWKSet(jwksUrl);
   }
-  return data.user;
+  return _jwks;
 }
 
 async function authMiddleware(req, res, next) {
@@ -31,11 +25,22 @@ async function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) return res.status(401).json({ error: 'Authorization token required' });
 
+  const token = header.slice(7);
+
   try {
-    const authUser = await verifyNeonAuthToken(header.slice(7));
-    req.user = { authUserId: authUser.id, email: authUser.email };
+    const origin = getNeonOrigin();
+    const { payload } = await jwtVerify(token, getJWKS(), {
+      issuer: origin,
+      audience: origin,
+    });
+    // payload.sub is the Neon Auth user ID, payload.email is the email
+    req.user = {
+      authUserId: payload.sub,
+      email: payload.email,
+    };
     next();
-  } catch {
+  } catch (err) {
+    console.error('JWT verification failed:', err.message);
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 }
