@@ -148,9 +148,9 @@ export default function Settings() {
       if (fileRef.current) fileRef.current.value = '';
       return;
     }
-    // ~750 KB limit — warn before sending
-    if (file.size > 800_000) {
-      setLogoError('Image is too large. Please use an image under 750 KB.');
+    // 5 MB limit — warn before sending
+    if (file.size > 5_000_000) {
+      setLogoError('Image is too large. Please use an image under 5 MB.');
       if (fileRef.current) fileRef.current.value = '';
       return;
     }
@@ -235,7 +235,7 @@ export default function Settings() {
                 Remove Logo
               </button>
             )}
-            <p className="text-xs text-muted">PNG, JPG, or SVG — max 750 KB</p>
+            <p className="text-xs text-muted">PNG, JPG, or SVG — max 5 MB</p>
           </div>
         </div>
         {logoError && (

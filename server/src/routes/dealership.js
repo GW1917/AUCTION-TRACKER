@@ -135,8 +135,8 @@ router.put('/logo', ...ownerOrAdmin, async (req, res) => {
   const { logoData } = req.body;
   if (!logoData) return res.status(400).json({ error: 'logoData is required' });
   if (!logoData.startsWith('data:image/')) return res.status(400).json({ error: 'Invalid image format' });
-  // ~750KB base64 limit
-  if (logoData.length > 1_000_000) return res.status(400).json({ error: 'Image too large (max ~750KB)' });
+  // 5 MB file → ~6.7 MB base64
+  if (logoData.length > 7_000_000) return res.status(400).json({ error: 'Image too large (max 5 MB)' });
   try {
     await sql`UPDATE dealerships SET logo_data = ${logoData} WHERE id = ${req.user.dealershipId}`;
     res.json({ success: true, logoData });
