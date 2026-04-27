@@ -37,6 +37,7 @@ async function migrate() {
     `;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'member'`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS dealership_id UUID REFERENCES dealerships(id) ON DELETE SET NULL`;
     console.log('  ✅  users');
 
     await sql`
