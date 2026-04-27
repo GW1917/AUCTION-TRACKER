@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { authClient } from '../auth';
@@ -14,6 +14,16 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState({ email: '', password: '', name: '' });
+
+  // After sign-up, wait for the session atom to populate then redirect to onboarding.
+  // (Navigating immediately causes a race where the session isn't set yet.)
+  const { data: session } = authClient.useSession();
+  const [awaitingOnboarding, setAwaitingOnboarding] = useState(false);
+  useEffect(() => {
+    if (awaitingOnboarding && session) {
+      navigate('/onboarding', { replace: true });
+    }
+  }, [session, awaitingOnboarding, navigate]);
 
   function setField(key: string, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -35,18 +45,26 @@ export default function Login() {
     }
 
     setLoading(true);
-    try {
-      if (mode === 'login') {
+
+    if (mode === 'login') {
+      try {
         const { error: err } = await authClient.signIn.email({
           email: form.email.trim(),
           password: form.password,
         });
         if (err) {
           setError(err.message || 'Invalid email or password.');
-        } else {
-          navigate('/dashboard', { replace: true });
+          setLoading(false);
         }
-      } else {
+        // Success: keep the spinner — PublicRoute will redirect to /dashboard
+        // once the session atom updates (avoids race condition where navigate
+        // fires before the session is persisted in the client).
+      } catch (err: any) {
+        setError(err?.message || 'Something went wrong. Please try again.');
+        setLoading(false);
+      }
+    } else {
+      try {
         const { error: err } = await authClient.signUp.email({
           email: form.email.trim(),
           password: form.password,
@@ -54,14 +72,15 @@ export default function Login() {
         });
         if (err) {
           setError(err.message || 'Registration failed. Try a different email.');
+          setLoading(false);
         } else {
-          navigate('/onboarding', { replace: true });
+          // Keep spinner — useEffect above will navigate once session atom populates
+          setAwaitingOnboarding(true);
         }
+      } catch (err: any) {
+        setError(err?.message || 'Something went wrong. Please try again.');
+        setLoading(false);
       }
-    } catch (err: any) {
-      setError(err?.message || 'Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
     }
   }
 

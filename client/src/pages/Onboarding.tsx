@@ -7,7 +7,7 @@ import { useAuth, type CreatePayload, type JoinPayload } from '../context/AuthCo
 type Step = 'choose' | 'create' | 'join' | 'code' | 'pending';
 
 export default function Onboarding() {
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending: sessionPending } = authClient.useSession();
   const { saveProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -20,6 +20,8 @@ export default function Onboarding() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
+  // Wait for session to resolve before deciding to redirect
+  if (sessionPending) return null;
   if (!session) {
     navigate('/login', { replace: true });
     return null;
