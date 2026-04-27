@@ -31,17 +31,27 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div className="px-6 py-6 border-b border-border/50">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #C9A84C, #E8C97A)' }}
-          >
-            <CarIcon />
+        {profile?.logoData ? (
+          <div className="flex items-center gap-3">
+            <img
+              src={profile.logoData}
+              alt={profile.dealershipName ?? 'Dealership logo'}
+              className="h-10 max-w-[160px] object-contain rounded"
+            />
           </div>
-          <div>
-            <div className="font-display font-bold text-off-white text-base leading-tight">Auction</div>
-            <div className="font-display font-bold text-gold text-base leading-tight -mt-0.5">Tracker</div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #C9A84C, #E8C97A)' }}
+            >
+              <CarIcon />
+            </div>
+            <div>
+              <div className="font-display font-bold text-off-white text-base leading-tight">Auction</div>
+              <div className="font-display font-bold text-gold text-base leading-tight -mt-0.5">Tracker</div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Nav */}
