@@ -49,6 +49,7 @@ export default function Settings() {
 
   // logo
   const [logoUploading, setLogoUploading] = useState(false);
+  const [logoError, setLogoError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const isOwner = profile?.role === 'owner';
@@ -140,7 +141,19 @@ export default function Settings() {
   async function handleLogoFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) return;
+    setLogoError('');
+
+    if (!file.type.startsWith('image/')) {
+      setLogoError('Only image files are supported (PNG, JPG, SVG). PDFs cannot be used as logos.');
+      if (fileRef.current) fileRef.current.value = '';
+      return;
+    }
+    // ~750 KB limit — warn before sending
+    if (file.size > 800_000) {
+      setLogoError('Image is too large. Please use an image under 750 KB.');
+      if (fileRef.current) fileRef.current.value = '';
+      return;
+    }
 
     setLogoUploading(true);
     const reader = new FileReader();
@@ -149,12 +162,19 @@ export default function Settings() {
         const logoData = reader.result as string;
         const { data } = await api.put('/dealership/logo', { logoData });
         updateProfile({ logoData: data.logoData });
-      } catch (err) {
-        console.error(err);
+        setLogoError('');
+      } catch (err: any) {
+        const msg = err?.response?.data?.error || 'Upload failed. Please try again.';
+        setLogoError(msg);
       } finally {
         setLogoUploading(false);
         if (fileRef.current) fileRef.current.value = '';
       }
+    };
+    reader.onerror = () => {
+      setLogoError('Could not read file. Please try a different image.');
+      setLogoUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
     };
     reader.readAsDataURL(file);
   }
@@ -215,9 +235,15 @@ export default function Settings() {
                 Remove Logo
               </button>
             )}
-            <p className="text-xs text-muted">PNG, JPG, or SVG — max ~750KB</p>
+            <p className="text-xs text-muted">PNG, JPG, or SVG — max 750 KB</p>
           </div>
         </div>
+        {logoError && (
+          <p className="text-sm rounded-xl px-4 py-2.5 flex items-center gap-2"
+            style={{ background: 'rgba(231,76,60,0.1)', border: '1px solid rgba(231,76,60,0.3)', color: '#f87171' }}>
+            {logoError}
+          </p>
+        )}
       </section>
 
       {/* Access Code */}
